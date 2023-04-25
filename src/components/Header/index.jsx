@@ -1,39 +1,52 @@
-import React from 'react';
-import Button from '@mui/material/Button';
-
-import styles from './Header.module.scss';
-import Container from '@mui/material/Container';
+import React, { useState } from "react";
+import Button from "@mui/material/Button";
+import { Link } from "react-router-dom";
+import styles from "./Header.module.scss";
+import Container from "@mui/material/Container";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, selectIsAuth } from "../../redux/slices/auth";
 
 export const Header = () => {
-  const isAuth = false;
-
-  const onClickLogout = () => {};
+  const dispatch = useDispatch();
+  const isAuth = useSelector(selectIsAuth);
+  const [token, setToken] = useState(window.localStorage.getItem('token'));
+  const onClickLogout = () => {
+    if (window.confirm("Вы уверены что хотите выйти?")) {
+      window.localStorage.removeItem("token");
+      setToken(null);
+      dispatch(logout());
+    }
+  };
 
   return (
     <div className={styles.root}>
       <Container maxWidth="lg">
         <div className={styles.inner}>
-          <a className={styles.logo} href="/">
-            <div>ARCHAKOV BLOG</div>
-          </a>
+          <Link className={styles.logo} to="/">
+            <div>BLOGHIRE</div>
+          </Link>
           <div className={styles.buttons}>
-            {isAuth ? (
+            {isAuth || token ? (
               <>
-                <a href="/posts/create">
+                <Link to="/add-post">
                   <Button variant="contained">Написать статью</Button>
-                </a>
-                <Button onClick={onClickLogout} variant="contained" color="error">
+                </Link>
+                <Button
+                  onClick={onClickLogout}
+                  variant="contained"
+                  color="error"
+                >
                   Выйти
                 </Button>
               </>
             ) : (
               <>
-                <a href="/login">
+                <Link to="/login">
                   <Button variant="outlined">Войти</Button>
-                </a>
-                <a href="/register">
+                </Link>
+                <Link to="/register">
                   <Button variant="contained">Создать аккаунт</Button>
-                </a>
+                </Link>
               </>
             )}
           </div>

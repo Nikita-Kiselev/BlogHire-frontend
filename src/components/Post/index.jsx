@@ -1,17 +1,20 @@
-import React from 'react';
-import clsx from 'clsx';
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Clear';
-import EditIcon from '@mui/icons-material/Edit';
-import EyeIcon from '@mui/icons-material/RemoveRedEyeOutlined';
-import CommentIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import React from "react";
+import clsx from "clsx";
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Clear";
+import EditIcon from "@mui/icons-material/Edit";
+import EyeIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import CommentIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import { Link } from "react-router-dom";
 
-import styles from './Post.module.scss';
-import { UserInfo } from '../UserInfo';
-import { PostSkeleton } from './Skeleton';
+import styles from "./Post.module.scss";
+import { UserInfo } from "../UserInfo";
+import { PostSkeleton } from "./Skeleton";
+import { useDispatch } from "react-redux";
+import { fetchRemovePost } from "../../redux/slices/posts";
 
 export const Post = ({
-  _id,
+  id,
   title,
   createdAt,
   imageUrl,
@@ -24,21 +27,36 @@ export const Post = ({
   isLoading,
   isEditable,
 }) => {
+  const dispatch = useDispatch();
+
   if (isLoading) {
-    return <PostSkeleton />;
+    return (
+        <PostSkeleton />
+    );
   }
 
-  const onClickRemove = () => {};
+  const onClickRemove = () => {
+    if (window.confirm("Вы действительно хотите удалить пост?")) {
+      dispatch(fetchRemovePost(id));
+    }
+  };
+  const timeCreatedAtPost = () => {
+    let text = createdAt.split("-");
+    return `${text[0]}-${text[1]}-${text[2][0]}${text[2][1]}`;
+  };
 
   return (
-    <div className={clsx(styles.root, { [styles.rootFull]: isFullPost })}>
+    <div
+      style={isFullPost ? {} : { maxHeight: "620px", height: "100%" }}
+      className={clsx(styles.root, { [styles.rootFull]: isFullPost })}
+    >
       {isEditable && (
         <div className={styles.editButtons}>
-          <a href={`/posts/${_id}/edit`}>
+          <Link to={`/posts/${id}/edit`}>
             <IconButton color="primary">
               <EditIcon />
             </IconButton>
-          </a>
+          </Link>
           <IconButton onClick={onClickRemove} color="secondary">
             <DeleteIcon />
           </IconButton>
@@ -52,10 +70,18 @@ export const Post = ({
         />
       )}
       <div className={styles.wrapper}>
-        <UserInfo {...user} additionalText={createdAt} />
+        <UserInfo {...user} additionalText={timeCreatedAtPost()} />
         <div className={styles.indention}>
-          <h2 className={clsx(styles.title, { [styles.titleFull]: isFullPost })}>
-            {isFullPost ? title : <a href={`/posts/${_id}`}>{title}</a>}
+          <h2
+            className={clsx(styles.title, { [styles.titleFull]: isFullPost })}
+          >
+            {isFullPost ? (
+              title
+            ) : (
+              <a href={`/posts/${id}`}>
+                {title.length > 68 ? title.slice(0, 65) + "..." : title}
+              </a>
+            )}
           </h2>
           <ul className={styles.tags}>
             {tags.map((name) => (
